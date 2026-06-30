@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Flipping — Villa Devoto 2 amb.</title>
+<style>
+:root {
+  --bg:#F4F1EC; --card:#fffaf4; --wine:#8B2E3B; --text:#2B2B2D; --muted:#6d6663;
+  --gold:#D4AF37; --orange:#c85010; --red:#8a1030; --darkred:#5a0818; --line:#e3d9cf;
+  --shadow:0 18px 45px rgba(43,43,45,.09); --radius:22px;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { margin:0; font-family:system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; background:var(--bg); color:var(--text); }
+a { color:inherit; }
+.topbar { position:sticky; top:0; z-index:20; background:rgba(244,241,236,.94); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }
+.topbar-inner { max-width:1180px; margin:0 auto; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; gap:18px; }
+.brand h1 { margin:0; color:var(--wine); font-size:clamp(20px,3vw,34px); letter-spacing:-.03em; }
+.brand p { margin:5px 0 0; color:var(--muted); font-size:14px; }
+.selector { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.selector button { border:1px solid var(--wine); color:var(--wine); background:transparent; padding:10px 14px; border-radius:999px; font-weight:700; }
+.selector .active { background:var(--wine); color:white; }
+main { max-width:1180px; margin:0 auto; padding:28px 24px 70px; }
+.hero { display:grid; grid-template-columns:1.25fr .75fr; gap:22px; align-items:stretch; margin-top:10px; }
+.panel, .kpi-card, .lane-card, .risk-card, .gloss, .mao-box { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+.panel { padding:28px; }
+.section-title { display:flex; justify-content:space-between; gap:16px; align-items:flex-end; margin:38px 0 16px; }
+.section-title h2 { margin:0; font-size:clamp(23px,2.8vw,32px); letter-spacing:-.02em; color:var(--wine); }
+.section-title p { max-width:700px; margin:6px 0 0; color:var(--muted); line-height:1.55; }
+.diagnosis p { line-height:1.68; margin:0 0 14px; font-size:15.8px; }
+.hero-side { display:grid; gap:16px; }
+.focus-box { padding:24px; background:var(--wine); color:white; border-radius:var(--radius); box-shadow:var(--shadow); }
+.focus-box small { opacity:.78; text-transform:uppercase; letter-spacing:.09em; font-size:11px; }
+.focus-box h2 { margin:8px 0; font-size:32px; }
+.focus-box p { margin:0; opacity:.9; line-height:1.5; }
+.kpi-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:14px; }
+.kpi-card { padding:18px; min-height:118px; }
+.kpi-card small { display:block; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; font-size:11px; margin-bottom:10px; }
+.kpi-card strong { font-size:clamp(22px,2.8vw,34px); letter-spacing:-.04em; color:var(--wine); }
+.kpi-card span { display:block; color:var(--muted); margin-top:4px; font-size:13px; }
+.lanes { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px; }
+.lane-card { padding:22px; transition:transform .18s ease, box-shadow .18s ease; position:relative; overflow:hidden; }
+.lane-card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:7px; background:var(--wine); }
+.lane-card.activo::before { background:var(--gold); } .lane-card.selectivo::before { background:var(--orange); } .lane-card.lento::before { background:var(--red); } .lane-card.inactivo::before { background:var(--darkred); }
+.lane-card:hover { transform:translateY(-3px); box-shadow:0 22px 52px rgba(43,43,45,.14); }
+.lane-top { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:18px; }
+.lane-top h3 { margin:0; font-size:23px; letter-spacing:-.02em; }
+.muted { color:var(--muted); margin:5px 0 0; font-size:13px; }
+.badge { display:inline-flex; align-items:center; border-radius:999px; padding:8px 11px; font-size:12px; font-weight:800; letter-spacing:.04em; color:white; white-space:nowrap; }
+.badge.small { padding:6px 8px; font-size:11px; }
+.badge-activo { background:var(--gold); color:#332700; } .badge-selectivo { background:var(--orange); } .badge-lento { background:var(--red); } .badge-inactivo { background:var(--darkred); }
+.score-row { display:flex; align-items:baseline; gap:10px; }
+.score-row strong { font-size:40px; line-height:1; color:var(--wine); letter-spacing:-.06em; }
+.score-row span { color:var(--muted); font-size:14px; }
+.bar { height:10px; border-radius:999px; background:#eadfd3; overflow:hidden; margin:10px 0 18px; }
+.bar span { display:block; height:100%; border-radius:999px; }
+.bar.soft { height:8px; margin:0; flex:1; }
+.metrics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.metrics-grid div { background:#f7efe6; border:1px solid #eaded0; border-radius:14px; padding:12px; }
+.metrics-grid small { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+.metrics-grid b { font-size:15px; }
+.risk-line { display:flex; align-items:center; gap:12px; margin:17px 0 0; color:var(--muted); font-size:13px; font-weight:700; }
+.interpretation { color:#433d3d; line-height:1.55; margin:14px 0 0; font-size:14px; }
+.table-wrap { overflow:auto; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--line); background:var(--card); }
+table { width:100%; border-collapse:collapse; min-width:880px; }
+th, td { padding:14px 13px; text-align:left; border-bottom:1px solid var(--line); font-size:14px; }
+th { background:#efe6dc; color:var(--wine); font-size:12px; text-transform:uppercase; letter-spacing:.07em; position:sticky; top:0; }
+tr:last-child td { border-bottom:0; }
+.row-activo td:first-child { border-left:6px solid var(--gold); } .row-selectivo td:first-child { border-left:6px solid var(--orange); } .row-lento td:first-child { border-left:6px solid var(--red); } .row-inactivo td:first-child { border-left:6px solid var(--darkred); }
+.risk-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.risk-card { padding:20px; }
+.risk-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+.risk-head span { color:var(--muted); font-weight:800; }
+.gauge { height:14px; background:#eadfd3; border-radius:999px; overflow:hidden; }
+.gauge span { display:block; height:100%; border-radius:999px; }
+.days-chart { position:relative; height:70px; margin-top:24px; background:linear-gradient(90deg, rgba(139,46,59,.08), rgba(139,46,59,.02)); border-radius:14px; border:1px solid #eaded0; }
+.mark { position:absolute; top:0; bottom:0; width:2px; background:var(--wine); }
+.mark em { position:absolute; top:48px; transform:translateX(-50%); font-style:normal; font-size:11px; color:var(--muted); white-space:nowrap; font-weight:700; }
+.mark.p25 { background:#6d6663; } .mark.p50 { background:var(--wine); width:3px; } .mark.p75 { background:#000; }
+.alert-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.alert-box { padding:22px; border-radius:var(--radius); background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow); }
+.alert-box h3 { color:var(--wine); margin:0 0 10px; }
+.alert-box ul { margin:0; padding-left:18px; line-height:1.7; }
+.mao { display:grid; grid-template-columns:.8fr 1.2fr; gap:18px; align-items:stretch; }
+.mao-box { padding:24px; }
+.input-row { display:flex; gap:10px; align-items:center; margin-top:14px; }
+.input-row input { width:100%; padding:13px 14px; border-radius:14px; border:1px solid var(--line); font:inherit; color:var(--text); background:white; }
+.mao-results { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.mao-result { padding:18px; background:#f7efe6; border:1px solid #eaded0; border-radius:18px; }
+.mao-result small { color:var(--muted); text-transform:uppercase; letter-spacing:.07em; font-size:11px; }
+.mao-result strong { display:block; color:var(--wine); font-size:30px; letter-spacing:-.05em; margin-top:8px; }
+.glossary-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.gloss { padding:16px; box-shadow:none; }
+.gloss b { color:var(--wine); }
+.gloss p { margin:6px 0 0; color:var(--muted); line-height:1.45; font-size:14px; }
+.technical { color:var(--muted); font-size:12px; line-height:1.55; margin-top:24px; }
+.tooltip { position:fixed; z-index:50; display:none; max-width:340px; background:#211e1f; color:white; padding:14px 16px; border-radius:16px; box-shadow:0 18px 48px rgba(0,0,0,.28); pointer-events:none; font-size:13px; line-height:1.45; }
+.tooltip b { color:#f4d675; }
+.tooltip .muted-tip { color:#d6ccc8; display:block; margin-top:6px; }
+@media (max-width: 960px) { .hero, .mao { grid-template-columns:1fr; } .kpi-grid { grid-template-columns:repeat(3,1fr); } .lanes, .risk-grid, .alert-grid, .glossary-grid { grid-template-columns:1fr; } }
+@media (max-width: 620px) { .topbar-inner { align-items:flex-start; flex-direction:column; } main { padding:20px 14px 50px; } .panel { padding:20px; } .kpi-grid { grid-template-columns:1fr 1fr; } .metrics-grid, .mao-results { grid-template-columns:1fr 1fr; } .focus-box h2 { font-size:27px; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1>Villa Devoto · 2 amb.</h1>
+      <p>Fuente: ZonaProp · Fecha de extracción: 2026-06-30 · Registros únicos: 48 · Duplicados eliminados: 0</p>
+    </div>
+    <div class="selector"><button class="active">2 amb.</button></div>
+  </div>
+</header>
+<main>
+  <section class="hero">
+    <div class="panel diagnosis">
+      <div class="section-title" style="margin-top:0"><div><h2>Diagnóstico del mercado</h2><p>Lectura de absorción por carril para definir ARV, riesgo y máximo precio de oferta.</p></div></div>
+      <p>El mercado analizado corresponde a Villa Devoto, 2 amb., con publicaciones extraídas de ZonaProp el 2026-06-30. La muestra consolidada contiene 48 registros únicos y 4 carriles de precio entre USD 100k y USD 180k. Para las métricas de absorción se tomaron las publicaciones con días en mercado y visitas por día completos.</p>
+<p>El carril con mayor actividad disponible en este mercado es USD 120k – USD 140k. Su P50 es de 41 días, con P25 de 14 días y P75 de 76 días. La VPD mediana es 6,5, suficiente para validar demanda activa dentro de la distribución observada.</p>
+<p>La operación debe estructurarse con ARV dentro de USD 120k – USD 140k, evitando forzar la salida hacia carriles superiores sin evidencia de absorción más rápida. El carril USD 100k – USD 120k puede funcionar como alternativa selectiva por demanda, pero su IQR exige producto muy competitivo en precio, estado y presentación. El principal foco de dispersión aparece fuera del carril óptimo, especialmente en USD 100k – USD 120k.</p>
+<p>Para la MAO se aplica factor 0.68 por P50 del carril óptimo (liquidez media-alta). Con un costo de renovación editable de USD 25.000, la referencia inicial queda en USD 56.600 con ARV conservador y USD 63.400 con ARV moderado. El dashboard permite modificar ese costo para recalcular el máximo precio de oferta.</p>
+    </div>
+    <aside class="hero-side">
+      <div class="focus-box">
+        <small>Carril óptimo</small>
+        <h2>USD 120k – USD 140k</h2>
+        <p>Score 5,8 · P50 41 días · VPD 6,5 · IQR 5,5x</p>
+      </div>
+      <div class="mao-box">
+        <small style="color:var(--muted); text-transform:uppercase; letter-spacing:.07em; font-size:11px;">Factor MAO</small>
+        <h2 style="margin:8px 0 6px; color:var(--wine);">0.68</h2>
+        <p style="margin:0; color:var(--muted); line-height:1.5;">Aplicado por P50 del carril óptimo. Renovación editable desde la sección final.</p>
+      </div>
+    </aside>
+  </section>
+
+  <section>
+    <div class="section-title"><div><h2>KPIs del mercado</h2><p>Indicadores principales calculados sobre publicaciones con días y visitas completas.</p></div></div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><small>Carriles analizados</small><strong>4</strong><span>rango USD 100k–180k</span></div>
+      <div class="kpi-card"><small>Carril óptimo</small><strong style="font-size:24px">120k – 140k</strong><span>ACTIVO</span></div>
+      <div class="kpi-card"><small>P50 más bajo</small><strong>41</strong><span>días</span></div>
+      <div class="kpi-card"><small>VPD máxima</small><strong>7,5</strong><span>visitas por día</span></div>
+      <div class="kpi-card"><small>PM² alto activo</small><strong style="font-size:24px">USD 2.458</strong><span>mediana</span></div>
+      <div class="kpi-card"><small>IQR mínimo</small><strong>2,2x</strong><span>menor dispersión</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><div><h2>Tarjetas por carril</h2><p>Resumen operativo de velocidad, demanda, dispersión y precio por metro cuadrado.</p></div></div>
+    <div class="lanes">
+    <article class="lane-card activo" onmouseenter="showTTbyIdx(event, 0)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="lane-top">
+        <div>
+          <h3>USD 120k – USD 140k</h3>
+          <p class="muted">Muestra 20/20 · 54 m² medianos</p>
+        </div>
+        <span class="badge badge-activo">ACTIVO</span>
+      </div>
+      <div class="score-row"><strong>5,8</strong><span>score de absorción</span></div>
+      <div class="bar"><span style="width:57.7%; background:var(--wine)"></span></div>
+      <div class="metrics-grid">
+        <div><small>P25</small><b>14 días</b></div>
+        <div><small>P50</small><b>41 días</b></div>
+        <div><small>P75</small><b>76 días</b></div>
+        <div><small>IQR</small><b>5,5x</b></div>
+        <div><small>VPD</small><b>6,5</b></div>
+        <div><small>PM²</small><b>USD 2.458</b></div>
+      </div>
+      <div class="risk-line"><span>IQR</span><div class="bar soft"><span style="width:55.5%; background:#D4AF37"></span></div></div>
+      <p class="interpretation">Es el carril con mayor actividad disponible en este mercado. Combina el P50 más bajo (41 días) con muestra completa y dispersión manejable para una operación con precio disciplinado.</p>
+    </article>
+
+    <article class="lane-card selectivo" onmouseenter="showTTbyIdx(event, 1)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="lane-top">
+        <div>
+          <h3>USD 100k – USD 120k</h3>
+          <p class="muted">Muestra 14/15 · 54 m² medianos</p>
+        </div>
+        <span class="badge badge-selectivo">SELECTIVO</span>
+      </div>
+      <div class="score-row"><strong>5,6</strong><span>score de absorción</span></div>
+      <div class="bar"><span style="width:56.1%; background:var(--wine)"></span></div>
+      <div class="metrics-grid">
+        <div><small>P25</small><b>20 días</b></div>
+        <div><small>P50</small><b>87 días</b></div>
+        <div><small>P75</small><b>180 días</b></div>
+        <div><small>IQR</small><b>8,9x</b></div>
+        <div><small>VPD</small><b>7,5</b></div>
+        <div><small>PM²</small><b>USD 2.084</b></div>
+      </div>
+      <div class="risk-line"><span>IQR</span><div class="bar soft"><span style="width:88.8%; background:#c85010"></span></div></div>
+      <p class="interpretation">Tiene demanda activa alta, pero la dispersión es significativa: IQR 8,9. Funciona si el producto entra bien posicionado y no depende de capturar el tramo lento del carril.</p>
+    </article>
+
+    <article class="lane-card lento" onmouseenter="showTTbyIdx(event, 2)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="lane-top">
+        <div>
+          <h3>USD 140k – USD 160k</h3>
+          <p class="muted">Muestra 10/9 · 58 m² medianos</p>
+        </div>
+        <span class="badge badge-lento">LENTO</span>
+      </div>
+      <div class="score-row"><strong>3,5</strong><span>score de absorción</span></div>
+      <div class="bar"><span style="width:35.2%; background:var(--wine)"></span></div>
+      <div class="metrics-grid">
+        <div><small>P25</small><b>27 días</b></div>
+        <div><small>P50</small><b>62 días</b></div>
+        <div><small>P75</small><b>132 días</b></div>
+        <div><small>IQR</small><b>4,9x</b></div>
+        <div><small>VPD</small><b>5,6</b></div>
+        <div><small>PM²</small><b>USD 2.638</b></div>
+      </div>
+      <div class="risk-line"><span>IQR</span><div class="bar soft"><span style="width:48.5%; background:#8a1030"></span></div></div>
+      <p class="interpretation">Presenta absorción posible, aunque con menor presión diaria de demanda. Requiere margen adicional y una ejecución superior para competir contra opciones de menor precio.</p>
+    </article>
+
+    <article class="lane-card inactivo" onmouseenter="showTTbyIdx(event, 3)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="lane-top">
+        <div>
+          <h3>USD 160k – USD 180k</h3>
+          <p class="muted">Muestra 2/2 · 86 m² medianos</p>
+        </div>
+        <span class="badge badge-inactivo">INACTIVO</span>
+      </div>
+      <div class="score-row"><strong>3,0</strong><span>score de absorción</span></div>
+      <div class="bar"><span style="width:30.4%; background:var(--wine)"></span></div>
+      <div class="metrics-grid">
+        <div><small>P25</small><b>117 días</b></div>
+        <div><small>P50</small><b>186 días</b></div>
+        <div><small>P75</small><b>254 días</b></div>
+        <div><small>IQR</small><b>2,2x</b></div>
+        <div><small>VPD</small><b>7,2</b></div>
+        <div><small>PM²</small><b>USD 1.958</b></div>
+      </div>
+      <div class="risk-line"><span>IQR</span><div class="bar soft"><span style="width:21.6%; background:#5a0818"></span></div></div>
+      <p class="interpretation">La evidencia no respalda usarlo como ARV objetivo estándar. El P50 de 186 días inmoviliza capital y exige una compra con descuento fuerte.</p>
+    </article></div>
+  </section>
+
+  <section>
+    <div class="section-title"><div><h2>Tabla comparativa</h2><p>Ordenada por score relativo de absorción dentro de este mercado.</p></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Carril</th><th>Categoría</th><th>Score</th><th>P25</th><th>P50</th><th>P75</th><th>IQR</th><th>VPD</th><th>PM²</th><th>M²</th><th>Muestra</th></tr></thead>
+        <tbody>
+      <tr class="row-activo">
+        <td><strong>USD 120k – USD 140k</strong></td>
+        <td><span class="badge small badge-activo">ACTIVO</span></td>
+        <td>5,8</td><td>14</td><td>41</td><td>76</td>
+        <td>5,5x</td><td>6,5</td><td>USD 2.458</td><td>54</td><td>20/20</td>
+      </tr>
+
+      <tr class="row-selectivo">
+        <td><strong>USD 100k – USD 120k</strong></td>
+        <td><span class="badge small badge-selectivo">SELECTIVO</span></td>
+        <td>5,6</td><td>20</td><td>87</td><td>180</td>
+        <td>8,9x</td><td>7,5</td><td>USD 2.084</td><td>54</td><td>14/15</td>
+      </tr>
+
+      <tr class="row-lento">
+        <td><strong>USD 140k – USD 160k</strong></td>
+        <td><span class="badge small badge-lento">LENTO</span></td>
+        <td>3,5</td><td>27</td><td>62</td><td>132</td>
+        <td>4,9x</td><td>5,6</td><td>USD 2.638</td><td>58</td><td>10/9</td>
+      </tr>
+
+      <tr class="row-inactivo">
+        <td><strong>USD 160k – USD 180k</strong></td>
+        <td><span class="badge small badge-inactivo">INACTIVO</span></td>
+        <td>3,0</td><td>117</td><td>186</td><td>254</td>
+        <td>2,2x</td><td>7,2</td><td>USD 1.958</td><td>86</td><td>2/2</td>
+      </tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><div><h2>Riesgo IQR</h2><p>El gauge mide dispersión relativa. El gráfico muestra P25, P50 y P75 para estimar capital-días.</p></div></div>
+    <div class="risk-grid">
+    <div class="risk-card" onmouseenter="showTTbyIdx(event, 0)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="risk-head"><strong>USD 120k – USD 140k</strong><span>5,5x IQR</span></div>
+      <div class="gauge"><span style="width:62.5%; background:#D4AF37"></span></div>
+      <div class="days-chart">
+        <span class="mark p25" style="left:5.4%"><em>P25 14</em></span>
+        <span class="mark p50" style="left:16.2%"><em>P50 41</em></span>
+        <span class="mark p75" style="left:30.0%"><em>P75 76</em></span>
+      </div>
+    </div>
+
+    <div class="risk-card" onmouseenter="showTTbyIdx(event, 1)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="risk-head"><strong>USD 100k – USD 120k</strong><span>8,9x IQR</span></div>
+      <div class="gauge"><span style="width:100.0%; background:#c85010"></span></div>
+      <div class="days-chart">
+        <span class="mark p25" style="left:8.0%"><em>P25 20</em></span>
+        <span class="mark p50" style="left:34.3%"><em>P50 87</em></span>
+        <span class="mark p75" style="left:70.8%"><em>P75 180</em></span>
+      </div>
+    </div>
+
+    <div class="risk-card" onmouseenter="showTTbyIdx(event, 2)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="risk-head"><strong>USD 140k – USD 160k</strong><span>4,9x IQR</span></div>
+      <div class="gauge"><span style="width:54.7%; background:#8a1030"></span></div>
+      <div class="days-chart">
+        <span class="mark p25" style="left:10.7%"><em>P25 27</em></span>
+        <span class="mark p50" style="left:24.4%"><em>P50 62</em></span>
+        <span class="mark p75" style="left:52.1%"><em>P75 132</em></span>
+      </div>
+    </div>
+
+    <div class="risk-card" onmouseenter="showTTbyIdx(event, 3)" onmousemove="moveTT(event)" onmouseleave="hideTT()">
+      <div class="risk-head"><strong>USD 160k – USD 180k</strong><span>2,2x IQR</span></div>
+      <div class="gauge"><span style="width:24.4%; background:#5a0818"></span></div>
+      <div class="days-chart">
+        <span class="mark p25" style="left:46.2%"><em>P25 117</em></span>
+        <span class="mark p50" style="left:73.1%"><em>P50 186</em></span>
+        <span class="mark p75" style="left:100.0%"><em>P75 254</em></span>
+      </div>
+    </div></div>
+  </section>
+
+  <section>
+    <div class="section-title"><div><h2>Alertas y recomendación final</h2><p>Priorización por carril y cálculo de MAO con ARV conservador y moderado.</p></div></div>
+    <div class="alert-grid">
+      <div class="alert-box"><h3>Carriles a priorizar</h3><ul><li>USD 120k – USD 140k</li><li>USD 100k – USD 120k</li></ul></div>
+      <div class="alert-box"><h3>Carriles a evitar como ARV objetivo estándar</h3><ul><li>USD 140k – USD 160k</li><li>USD 160k – USD 180k</li></ul></div>
+    </div>
+    <div class="mao" style="margin-top:18px;">
+      <div class="mao-box">
+        <h3 style="margin-top:0;color:var(--wine);">Supuesto de renovación</h3>
+        <p style="color:var(--muted);line-height:1.55;">El costo no viene en los CSV. Se usa un supuesto editable para recalcular la MAO sin cambiar el resto del análisis.</p>
+        <div class="input-row"><span>USD</span><input id="reno" type="number" min="0" step="1000" value="25000" oninput="updateMAO()"></div>
+      </div>
+      <div class="mao-box">
+        <h3 style="margin-top:0;color:var(--wine);">MAO orientativa · USD 120k – USD 140k</h3>
+        <div class="mao-results">
+          <div class="mao-result"><small>ARV conservador · USD 120.000</small><strong id="maoCons">USD 56.600</strong></div>
+          <div class="mao-result"><small>ARV moderado · USD 130.000</small><strong id="maoMod">USD 63.400</strong></div>
+        </div>
+        <p class="technical">Fórmula aplicada: MAO = ARV × 0.68 − costo de renovación. El factor se asigna por el P50 del carril óptimo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><div><h2>Glosario</h2><p>Definiciones operativas para interpretar el dashboard.</p></div></div>
+    <div class="glossary-grid"><div class="gloss"><b>Carril de precio</b><p>Rango de valor de venta donde compite la propiedad renovada.</p></div>
+<div class="gloss"><b>Score de absorción</b><p>Índice 0–10 que mide qué tan bien funciona ese carril dentro de este mercado.</p></div>
+<div class="gloss"><b>P50 — Tiempo de salida</b><p>Días que tarda la mitad de las propiedades en venderse.</p></div>
+<div class="gloss"><b>P25 / P75</b><p>Rango de velocidad entre el grupo más rápido y el más lento.</p></div>
+<div class="gloss"><b>IQR Ratio</b><p>Cuántas veces más tarda la propiedad lenta versus la rápida del mismo carril.</p></div>
+<div class="gloss"><b>VPD</b><p>Visitas por día: presión de demanda activa en ese rango de precio.</p></div>
+<div class="gloss"><b>PM²</b><p>Precio de venta por metro cuadrado.</p></div>
+<div class="gloss"><b>ARV</b><p>Precio estimado de venta post-renovación.</p></div>
+<div class="gloss"><b>MAO</b><p>Máximo precio de oferta para que la operación cierre con ganancia.</p></div>
+<div class="gloss"><b>Capital-Días</b><p>Costo de tener el capital inmovilizado mientras la propiedad espera venderse.</p></div></div>
+  </section>
+
+  <p class="technical">Nota técnica: se excluyeron de las métricas las filas sin visitas por día o con días en mercado igual a cero. En el carril USD 140k–USD 160k se observaron 10 registros únicos y unidades_listing informado de 9; el balance se limita a 100% para el score.</p>
+</main>
+<div id="tt" class="tooltip"></div>
+<script>
+const lanes = [{"label": "USD 120k – USD 140k", "low": 120000, "high": 140000, "n": 20, "n_rows": 21, "n_listing": 20, "p25": 13.75, "p50": 41.0, "p75": 76.25, "iqr": 5.545454545454546, "vpd": 6.55, "pm2": 2457.5, "m2": 53.5, "precio_mediano": 128950.0, "rows_incomplete": 1, "vel": 10.0, "dem": 4.871794871794872, "bal": 2.0, "pen": 0.8318181818181818, "score": 5.773310023310024, "categoria": "ACTIVO", "interpretacion": "Es el carril con mayor actividad disponible en este mercado. Combina el P50 más bajo (41 días) con muestra completa y dispersión manejable para una operación con precio disciplinado.", "score_fmt": "5,8", "p25_fmt": "14", "p50_fmt": "41", "p75_fmt": "76", "iqr_fmt": "5,5", "vpd_fmt": "6,5", "pm2_fmt": "USD 2.458", "m2_fmt": "54", "precio_mediano_fmt": "USD 128.950", "arv_conservador": 120000, "arv_moderado": 130000.0, "arv_conservador_fmt": "USD 120.000", "arv_moderado_fmt": "USD 130.000"}, {"label": "USD 100k – USD 120k", "low": 100000, "high": 120000, "n": 14, "n_rows": 15, "n_listing": 15, "p25": 20.25, "p50": 87.0, "p75": 179.75, "iqr": 8.876543209876543, "vpd": 7.55, "pm2": 2084.5, "m2": 54.5, "precio_mediano": 115000.0, "rows_incomplete": 1, "vel": 6.8166089965397925, "dem": 9.999999999999998, "bal": 1.8666666666666667, "pen": 1.3314814814814815, "score": 5.609325900294757, "categoria": "SELECTIVO", "interpretacion": "Tiene demanda activa alta, pero la dispersión es significativa: IQR 8,9. Funciona si el producto entra bien posicionado y no depende de capturar el tramo lento del carril.", "score_fmt": "5,6", "p25_fmt": "20", "p50_fmt": "87", "p75_fmt": "180", "iqr_fmt": "8,9", "vpd_fmt": "7,5", "pm2_fmt": "USD 2.084", "m2_fmt": "54", "precio_mediano_fmt": "USD 115.000", "arv_conservador": 100000, "arv_moderado": 110000.0, "arv_conservador_fmt": "USD 100.000", "arv_moderado_fmt": "USD 110.000"}, {"label": "USD 140k – USD 160k", "low": 140000, "high": 160000, "n": 10, "n_rows": 10, "n_listing": 9, "p25": 27.25, "p50": 62.0, "p75": 132.25, "iqr": 4.853211009174312, "vpd": 5.6, "pm2": 2637.5, "m2": 58.0, "precio_mediano": 148500.0, "rows_incomplete": 0, "vel": 8.546712802768166, "dem": 0.0, "bal": 2, "pen": 0.7279816513761468, "score": 3.5180391098695285, "categoria": "LENTO", "interpretacion": "Presenta absorción posible, aunque con menor presión diaria de demanda. Requiere margen adicional y una ejecución superior para competir contra opciones de menor precio.", "score_fmt": "3,5", "p25_fmt": "27", "p50_fmt": "62", "p75_fmt": "132", "iqr_fmt": "4,9", "vpd_fmt": "5,6", "pm2_fmt": "USD 2.638", "m2_fmt": "58", "precio_mediano_fmt": "USD 148.500", "arv_conservador": 140000, "arv_moderado": 150000.0, "arv_conservador_fmt": "USD 140.000", "arv_moderado_fmt": "USD 150.000"}, {"label": "USD 160k – USD 180k", "low": 160000, "high": 180000, "n": 2, "n_rows": 2, "n_listing": 2, "p25": 117.25, "p50": 185.5, "p75": 253.75, "iqr": 2.1641791044776117, "vpd": 7.25, "pm2": 1958.5, "m2": 86.0, "precio_mediano": 164500.0, "rows_incomplete": 0, "vel": 0.0, "dem": 8.461538461538463, "bal": 2.0, "pen": 0.3246268656716418, "score": 3.0369115958668202, "categoria": "INACTIVO", "interpretacion": "La evidencia no respalda usarlo como ARV objetivo estándar. El P50 de 186 días inmoviliza capital y exige una compra con descuento fuerte.", "score_fmt": "3,0", "p25_fmt": "117", "p50_fmt": "186", "p75_fmt": "254", "iqr_fmt": "2,2", "vpd_fmt": "7,2", "pm2_fmt": "USD 1.958", "m2_fmt": "86", "precio_mediano_fmt": "USD 164.500", "arv_conservador": 160000, "arv_moderado": 170000.0, "arv_conservador_fmt": "USD 160.000", "arv_moderado_fmt": "USD 170.000"}];
+const factor = 0.6800;
+const arvConservative = 120000;
+const arvModerate = 130000.0;
+function fmtMoney(v) {
+  if (!isFinite(v)) return 'N/D';
+  return 'USD ' + Math.round(v).toLocaleString('es-AR');
+}
+function updateMAO() {
+  const reno = Number(document.getElementById('reno').value || 0);
+  document.getElementById('maoCons').textContent = fmtMoney(arvConservative * factor - reno);
+  document.getElementById('maoMod').textContent = fmtMoney(arvModerate * factor - reno);
+}
+function showTTbyIdx(event, idx) {
+  const d = lanes[idx];
+  const el = document.getElementById('tt');
+  el.innerHTML = `<b>${d.label}</b><span class="muted-tip">${d.categoria} · Score ${d.score_fmt}</span><span class="muted-tip">P25/P50/P75: ${d.p25_fmt} / ${d.p50_fmt} / ${d.p75_fmt} días</span><span class="muted-tip">IQR: ${d.iqr_fmt}x · VPD: ${d.vpd_fmt} · PM²: ${d.pm2_fmt}</span><span class="muted-tip">Muestra: ${d.n}/${d.n_listing} · M² mediano: ${d.m2_fmt}</span>`;
+  el.style.display = 'block';
+  moveTT(event);
+}
+function moveTT(event) {
+  const el = document.getElementById('tt');
+  const pad = 18;
+  let x = event.clientX + pad;
+  let y = event.clientY + pad;
+  const rect = el.getBoundingClientRect();
+  if (x + rect.width > window.innerWidth - 8) x = event.clientX - rect.width - pad;
+  if (y + rect.height > window.innerHeight - 8) y = event.clientY - rect.height - pad;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+}
+function hideTT() { document.getElementById('tt').style.display = 'none'; }
+updateMAO();
+</script>
+</body>
+</html>
